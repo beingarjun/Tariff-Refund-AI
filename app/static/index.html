@@ -20,8 +20,12 @@
             <input type="file" name="shipments" accept=".csv" required />
           </label>
           <label>
-            Tariff Rates CSV
-            <input type="file" name="tariff_rates" accept=".csv" required />
+            Previous Tariffs CSV
+            <input type="file" name="previous_tariffs" accept=".csv" required />
+          </label>
+          <label>
+            Present Tariffs CSV
+            <input type="file" name="present_tariffs" accept=".csv" required />
           </label>
           <label>
             Exclusions CSV (optional)
@@ -52,6 +56,9 @@
                 <th>Paid</th>
                 <th>Expected</th>
                 <th>Refundable</th>
+                <th>Previous %</th>
+                <th>Present %</th>
+                <th>Return %</th>
                 <th>Confidence</th>
                 <th>Notes</th>
               </tr>
@@ -67,4 +74,3 @@
     <script src="/static/app.js"></script>
   </body>
 </html>
-

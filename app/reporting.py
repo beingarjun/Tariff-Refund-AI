@@ -15,6 +15,10 @@ def build_report_csv(analysis: dict) -> str:
         "duty_paid",
         "expected_duty",
         "refundable_amount",
+        "previous_rate_percent",
+        "present_rate_percent",
+        "rate_reduction_percent_points",
+        "return_percentage",
         "applied_rate_percent",
         "exclusion_applied",
         "exclusion_reason",
@@ -28,4 +32,3 @@ def build_report_csv(analysis: dict) -> str:
     for row in analysis["results"]:
         writer.writerow(row)
     return output.getvalue()
-

@@ -34,18 +34,21 @@ def health() -> dict:
 @app.post("/api/analyze")
 def analyze(
     shipments: UploadFile = File(...),
-    tariff_rates: UploadFile = File(...),
+    previous_tariffs: UploadFile = File(...),
+    present_tariffs: UploadFile = File(...),
     exclusions: UploadFile | None = File(default=None),
 ) -> dict:
     try:
         shipment_text = _decode_upload(shipments)
-        rates_text = _decode_upload(tariff_rates)
+        previous_rates_text = _decode_upload(previous_tariffs)
+        present_rates_text = _decode_upload(present_tariffs)
         exclusions_text = _decode_upload(exclusions) if exclusions else None
 
         shipment_rows = parse_shipments(shipment_text)
-        rate_rows = parse_tariff_rates(rates_text)
+        previous_rate_rows = parse_tariff_rates(previous_rates_text, "previous_tariffs.csv")
+        present_rate_rows = parse_tariff_rates(present_rates_text, "present_tariffs.csv")
         exclusion_rows = parse_exclusions(exclusions_text) if exclusions_text else []
-        return analyze_refunds(shipment_rows, rate_rows, exclusion_rows)
+        return analyze_refunds(shipment_rows, previous_rate_rows, present_rate_rows, exclusion_rows)
     except ParseError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
 
@@ -53,22 +56,24 @@ def analyze(
 @app.post("/api/analyze/report", response_class=PlainTextResponse)
 def analyze_report(
     shipments: UploadFile = File(...),
-    tariff_rates: UploadFile = File(...),
+    previous_tariffs: UploadFile = File(...),
+    present_tariffs: UploadFile = File(...),
     exclusions: UploadFile | None = File(default=None),
 ) -> PlainTextResponse:
     try:
         shipment_text = _decode_upload(shipments)
-        rates_text = _decode_upload(tariff_rates)
+        previous_rates_text = _decode_upload(previous_tariffs)
+        present_rates_text = _decode_upload(present_tariffs)
         exclusions_text = _decode_upload(exclusions) if exclusions else None
 
         shipment_rows = parse_shipments(shipment_text)
-        rate_rows = parse_tariff_rates(rates_text)
+        previous_rate_rows = parse_tariff_rates(previous_rates_text, "previous_tariffs.csv")
+        present_rate_rows = parse_tariff_rates(present_rates_text, "present_tariffs.csv")
         exclusion_rows = parse_exclusions(exclusions_text) if exclusions_text else []
-        analysis = analyze_refunds(shipment_rows, rate_rows, exclusion_rows)
+        analysis = analyze_refunds(shipment_rows, previous_rate_rows, present_rate_rows, exclusion_rows)
         report_csv = build_report_csv(analysis)
     except ParseError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
 
     headers = {"Content-Disposition": 'attachment; filename="tariff_refund_report.csv"'}
     return PlainTextResponse(content=report_csv, media_type="text/csv", headers=headers)
-

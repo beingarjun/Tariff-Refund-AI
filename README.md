@@ -4,7 +4,7 @@ Tariff Refund AI is a full-stack tool that helps identify potentially overpaid i
 
 ## Features
 
-- CSV upload workflow for shipments, tariff rates, and optional exclusion rules
+- CSV upload workflow for shipments, previous tariffs, present tariffs, and optional exclusion rules
 - Refund estimation engine with:
   - date-based tariff matching
   - optional exclusion handling
@@ -28,7 +28,8 @@ tests/
   test_engine.py   Unit tests
 sample_data/
   shipments.csv
-  tariff_rates.csv
+  previous_tariffs.csv
+  present_tariffs.csv
   exclusions.csv
 ```
 
@@ -47,7 +48,17 @@ Columns:
 - `duty_paid` (number)
 - `quantity` (number)
 
-### `tariff_rates.csv` (required)
+### `previous_tariffs.csv` (required)
+
+Columns:
+
+- `hts_code`
+- `country_of_origin`
+- `start_date` (`YYYY-MM-DD`)
+- `end_date` (`YYYY-MM-DD`)
+- `rate_percent` (number)
+
+### `present_tariffs.csv` (required)
 
 Columns:
 
@@ -81,12 +92,11 @@ Open: `http://127.0.0.1:8000`
 ## API Endpoints
 
 - `GET /api/health`
-- `POST /api/analyze` (multipart file upload, returns JSON)
-- `POST /api/analyze/report` (multipart file upload, returns CSV report)
+- `POST /api/analyze` (multipart file upload with `shipments`, `previous_tariffs`, `present_tariffs`, optional `exclusions`)
+- `POST /api/analyze/report` (same payload, returns CSV report)
 
 ## Run Tests
 
 ```bash
 python -m unittest discover -s tests -v
 ```
-

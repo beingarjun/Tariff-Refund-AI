@@ -46,9 +46,12 @@ class RefundResult:
     duty_paid: float
     expected_duty: float
     refundable_amount: float
+    previous_rate_percent: float
+    present_rate_percent: float
+    rate_reduction_percent_points: float
+    return_percentage: float
     applied_rate_percent: float
     exclusion_applied: bool
     exclusion_reason: Optional[str]
     confidence_score: float
     notes: str
-

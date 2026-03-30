@@ -38,7 +38,8 @@ def _round_currency(value: float) -> float:
 
 def analyze_refunds(
     shipments: list[ShipmentRecord],
-    tariff_rates: list[TariffRate],
+    previous_tariff_rates: list[TariffRate],
+    present_tariff_rates: list[TariffRate],
     exclusions: list[ExclusionRule] | None = None,
 ) -> dict:
     exclusions = exclusions or []
@@ -52,30 +53,56 @@ def analyze_refunds(
     for shipment in shipments:
         total_paid += shipment.duty_paid
         exclusion = _find_matching_exclusion(shipment, exclusions)
-        matched_rate = _find_matching_rate(shipment, tariff_rates)
+        previous_rate = _find_matching_rate(shipment, previous_tariff_rates)
+        present_rate = _find_matching_rate(shipment, present_tariff_rates)
 
         notes = []
         exclusion_applied = exclusion is not None
         exclusion_reason = exclusion.reason if exclusion else None
-        confidence_score = 0.6
+        confidence_score = 0.7
 
         if exclusion:
-            expected_duty = 0.0
-            applied_rate = 0.0
+            prev_rate_percent = previous_rate.rate_percent if previous_rate else 0.0
+            present_rate_percent = 0.0
             notes.append("Exclusion rule matched")
             confidence_score = 0.95
-        elif matched_rate:
-            applied_rate = matched_rate.rate_percent
-            expected_duty = shipment.declared_value * (applied_rate / 100.0)
-            notes.append("Tariff rate matched")
+        elif previous_rate and present_rate:
+            prev_rate_percent = previous_rate.rate_percent
+            present_rate_percent = present_rate.rate_percent
+            notes.append("Previous and present tariff rates matched")
             confidence_score = 0.9
+        elif present_rate:
+            prev_rate_percent = 0.0
+            present_rate_percent = present_rate.rate_percent
+            notes.append("Only present tariff rate matched")
+            confidence_score = 0.75
+        elif previous_rate:
+            prev_rate_percent = previous_rate.rate_percent
+            present_rate_percent = previous_rate.rate_percent
+            notes.append("Present tariff missing; reused previous rate")
+            confidence_score = 0.65
         else:
-            applied_rate = 0.0
-            expected_duty = shipment.duty_paid
+            prev_rate_percent = 0.0
+            present_rate_percent = 0.0
             notes.append("No matching tariff rate; assumed paid amount as expected")
             confidence_score = 0.5
 
-        refundable = max(0.0, shipment.duty_paid - expected_duty)
+        applied_rate = present_rate_percent
+        rate_reduction_points = max(0.0, prev_rate_percent - present_rate_percent)
+
+        expected_duty = shipment.declared_value * (present_rate_percent / 100.0)
+        if not present_rate and not exclusion:
+            expected_duty = shipment.duty_paid
+
+        refundable_by_rate = shipment.declared_value * (rate_reduction_points / 100.0)
+        refundable_by_paid = max(0.0, shipment.duty_paid - expected_duty)
+        refundable = min(refundable_by_rate, refundable_by_paid) if rate_reduction_points > 0 else refundable_by_paid
+
+        if prev_rate_percent > 0:
+            return_percentage = (rate_reduction_points / prev_rate_percent) * 100.0
+        else:
+            return_percentage = 0.0
+
         if refundable > 0:
             likely_refunds += 1
 
@@ -96,6 +123,10 @@ def analyze_refunds(
                 duty_paid=_round_currency(shipment.duty_paid),
                 expected_duty=expected_duty,
                 refundable_amount=refundable,
+                previous_rate_percent=_round_currency(prev_rate_percent),
+                present_rate_percent=_round_currency(present_rate_percent),
+                rate_reduction_percent_points=_round_currency(rate_reduction_points),
+                return_percentage=_round_currency(return_percentage),
                 applied_rate_percent=_round_currency(applied_rate),
                 exclusion_applied=exclusion_applied,
                 exclusion_reason=exclusion_reason,
@@ -122,4 +153,3 @@ def analyze_refunds(
             for row in ordered
         ],
     }
-

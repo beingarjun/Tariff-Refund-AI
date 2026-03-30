@@ -64,10 +64,10 @@ def parse_shipments(csv_text: str) -> list[ShipmentRecord]:
     return records
 
 
-def parse_tariff_rates(csv_text: str) -> list[TariffRate]:
+def parse_tariff_rates(csv_text: str, source_name: str = "tariff_rates.csv") -> list[TariffRate]:
     reader = csv.DictReader(StringIO(csv_text))
     required = ["hts_code", "country_of_origin", "start_date", "end_date", "rate_percent"]
-    _validate_columns(reader.fieldnames or [], required, "tariff_rates.csv")
+    _validate_columns(reader.fieldnames or [], required, source_name)
 
     records: list[TariffRate] = []
     for row in reader:
@@ -100,4 +100,3 @@ def parse_exclusions(csv_text: str) -> list[ExclusionRule]:
             )
         )
     return records
-

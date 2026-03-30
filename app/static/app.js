@@ -51,6 +51,9 @@ function renderResults(results) {
       <td>${asMoney(row.duty_paid)}</td>
       <td>${asMoney(row.expected_duty)}</td>
       <td>${asMoney(row.refundable_amount)}</td>
+      <td>${row.previous_rate_percent}%</td>
+      <td>${row.present_rate_percent}%</td>
+      <td>${row.return_percentage}%</td>
       <td>${row.confidence_score}</td>
       <td>${row.notes}</td>
     `;
@@ -106,4 +109,3 @@ downloadBtn.addEventListener("click", async () => {
     setStatus(error.message);
   }
 });
-
