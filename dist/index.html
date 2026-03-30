@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Tariff Refund AI</title>
+    <link rel="stylesheet" href="/static/styles.css" />
+  </head>
+  <body>
+    <main class="container">
+      <header class="hero">
+        <h1>Tariff Refund AI</h1>
+        <p>Upload trade data and identify potential duty refunds in minutes.</p>
+      </header>
+
+      <section class="panel">
+        <form id="analyze-form">
+          <label>
+            Shipments CSV
+            <input type="file" name="shipments" accept=".csv" required />
+          </label>
+          <label>
+            Previous Tariffs CSV
+            <input type="file" name="previous_tariffs" accept=".csv" required />
+          </label>
+          <label>
+            Present Tariffs CSV
+            <input type="file" name="present_tariffs" accept=".csv" required />
+          </label>
+          <label>
+            Exclusions CSV (optional)
+            <input type="file" name="exclusions" accept=".csv" />
+          </label>
+          <div class="actions">
+            <button type="submit">Analyze</button>
+            <button type="button" id="download-report">Download CSV Report</button>
+          </div>
+        </form>
+      </section>
+
+      <section class="panel hidden" id="summary-panel">
+        <h2>Summary</h2>
+        <div id="summary-grid" class="summary-grid"></div>
+      </section>
+
+      <section class="panel hidden" id="results-panel">
+        <h2>Top Refund Opportunities</h2>
+        <div class="table-wrap">
+          <table id="results-table">
+            <thead>
+              <tr>
+                <th>Entry ID</th>
+                <th>Importer</th>
+                <th>Date</th>
+                <th>HTS</th>
+                <th>Paid</th>
+                <th>Expected</th>
+                <th>Refundable</th>
+                <th>Previous %</th>
+                <th>Present %</th>
+                <th>Return %</th>
+                <th>Confidence</th>
+                <th>Notes</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </section>
+
+      <p id="status" class="status"></p>
+    </main>
+
+    <script src="/static/app.js"></script>
+  </body>
+</html>
