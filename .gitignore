@@ -7,4 +7,6 @@ venv/
 dist/
 build/
 *.log
+.tools/python/
+node_modules/
 
